@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Repertorio</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1b2a;
+  --bg2: #112036;
+  --bg3: #162840;
+  --bg4: #1e3352;
+  --bg-main: #0a1520;
+  --accent: #e8ff47;
+  --accent2: #ff6b35;
+  --text: #e8f0f8;
+  --text2: #7a9ab8;
+  --text3: #3d6080;
+  --border: rgba(100,160,220,0.10);
+  --border2: rgba(100,160,220,0.18);
+  --green: #4ade80;
+  --amber: #fbbf24;
+  --red: #f87171;
+  --blue: #60a5fa;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; font-size: 15px; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 4px; }
+
+/* LAYOUT */
+.app { display: grid; grid-template-columns: 260px 1fr; grid-template-rows: auto 1fr; height: 100vh; overflow: hidden; }
+.topbar { grid-column: 1 / -1; background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 20px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+.sidebar { background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.main { overflow-y: auto; background: var(--bg-main); }
+
+/* TOPBAR */
+.logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
+.logo-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: var(--radius-sm); font-size: 13px; font-family: 'DM Sans', sans-serif; cursor: pointer; border: none; transition: all 0.15s; font-weight: 500; }
+.btn-primary { background: var(--accent); color: #0e0e10; }
+.btn-primary:hover { background: #d4eb30; }
+.btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border2); }
+.btn-ghost:hover { background: var(--bg3); color: var(--text); }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+.btn-danger:hover { background: rgba(248,113,113,0.1); }
+
+/* SIDEBAR */
+.sidebar-search { padding: 12px; border-bottom: 1px solid var(--border); }
+.search-input { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none; }
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--text3); }
+
+.sidebar-filters { padding: 10px 12px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 5px; }
+.filter-chip { font-size: 11px; padding: 3px 9px; border-radius: 20px; cursor: pointer; border: 1px solid var(--border2); color: var(--text2); background: transparent; font-family: 'DM Sans', sans-serif; transition: all 0.15s; white-space: nowrap; }
+.filter-chip.active { background: var(--accent); color: #0e0e10; border-color: var(--accent); font-weight: 500; }
+
+.sidebar-stats { padding: 10px 12px; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.stat-mini { background: var(--bg3); border-radius: var(--radius-sm); padding: 6px 8px; text-align: center; }
+.stat-mini-num { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--accent); }
+.stat-mini-lbl { font-size: 9px; color: var(--text3); margin-top: 1px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.song-list { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+.song-item { padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; border: 1px solid transparent; transition: all 0.15s; }
+.song-item:hover { background: var(--bg3); }
+.song-item.active { background: var(--bg3); border-color: var(--accent); }
+.song-item-title { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.song-item-artist { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.song-item-meta { display: flex; align-items: center; gap: 5px; margin-top: 5px; flex-wrap: wrap; }
+.badge { display: inline-flex; align-items: center; font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: 500; }
+.badge-green { background: rgba(74,222,128,0.15); color: var(--green); }
+.badge-amber { background: rgba(251,191,36,0.15); color: var(--amber); }
+.badge-red { background: rgba(248,113,113,0.15); color: var(--red); }
+.badge-blue { background: rgba(96,165,250,0.15); color: var(--blue); }
+.badge-accent { background: rgba(232,255,71,0.15); color: var(--accent); }
+.badge-gray { background: var(--bg4); color: var(--text2); }
+
+/* MAIN DETAIL */
+.detail-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; color: var(--text3); }
+.detail-empty-icon { font-size: 48px; opacity: 0.3; }
+.detail-empty p { font-size: 14px; }
+
+.detail-content { padding: 14px 18px; max-width: 900px; }
+.detail-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; gap: 16px; }
+.detail-title-block {}
+.detail-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; line-height: 1.1; }
+.detail-artist { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.detail-header-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.detail-full { grid-column: 1 / -1; }
+.detail-2col { grid-column: span 2; }
+
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; }
+.card-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); font-weight: 500; margin-bottom: 7px; font-family: 'DM Mono', monospace; }
+
+/* METER CARDS */
+.meter-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 8px; }
+.meter-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; }
+.meter-card-val { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 800; color: var(--accent); }
+.meter-card-lbl { font-size: 9px; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* STATUS SELECTOR */
+.status-pills { display: flex; gap: 5px; flex-wrap: wrap; }
+.status-pill { padding: 4px 10px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1px solid var(--border2); color: var(--text2); background: transparent; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+.status-pill.active-aprendida { background: rgba(74,222,128,0.15); color: var(--green); border-color: rgba(74,222,128,0.4); }
+.status-pill.active-progreso { background: rgba(251,191,36,0.15); color: var(--amber); border-color: rgba(251,191,36,0.4); }
+.status-pill.active-pendiente { background: rgba(248,113,113,0.15); color: var(--red); border-color: rgba(248,113,113,0.4); }
+
+/* ESTILO SELECTOR */
+.estilo-pills { display: flex; gap: 5px; }
+.estilo-pill { padding: 4px 10px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1px solid var(--border2); color: var(--text2); background: transparent; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+.estilo-pill.active-solo { background: rgba(96,165,250,0.15); color: var(--blue); border-color: rgba(96,165,250,0.4); }
+.estilo-pill.active-ritmico { background: rgba(232,255,71,0.15); color: var(--accent); border-color: rgba(232,255,71,0.4); }
+.estilo-pill.active-ambos { background: rgba(167,139,250,0.15); color: #a78bfa; border-color: rgba(167,139,250,0.4); }
+
+/* CAPO SELECTOR */
+.capo-selector { display: flex; gap: 4px; flex-wrap: wrap; }
+.capo-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border2); background: transparent; color: var(--text2); font-size: 11px; cursor: pointer; font-family: 'DM Mono', monospace; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+.capo-btn:hover { border-color: var(--accent); color: var(--accent); }
+.capo-btn.active { background: var(--accent); color: #0e0e10; border-color: var(--accent); font-weight: 700; }
+
+/* DIFFICULTY STARS */
+.stars { display: flex; gap: 4px; }
+.star { font-size: 20px; cursor: pointer; color: var(--bg4); transition: color 0.1s; }
+.star.lit { color: var(--accent); }
+
+/* PUBLIC TOGGLE */
+.toggle-wrap { display: flex; align-items: center; gap: 10px; }
+.toggle { width: 40px; height: 22px; background: var(--bg4); border-radius: 11px; cursor: pointer; position: relative; transition: background 0.2s; border: none; }
+.toggle.on { background: var(--green); }
+.toggle::after { content: ''; position: absolute; width: 16px; height: 16px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: left 0.2s; }
+.toggle.on::after { left: 21px; }
+.toggle-label { font-size: 13px; color: var(--text2); }
+
+/* COUNTER */
+.counter-wrap { display: flex; align-items: center; gap: 10px; }
+.counter-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border2); background: transparent; color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+.counter-btn:hover { background: var(--bg3); border-color: var(--accent); color: var(--accent); }
+.counter-num { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: var(--accent); min-width: 40px; text-align: center; }
+
+/* TABLATURE */
+.tab-textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 12px; color: var(--accent); font-family: 'DM Mono', monospace; font-size: 12px; line-height: 1.8; resize: vertical; min-height: 80px; outline: none; }
+.tab-textarea:focus { border-color: var(--accent); }
+
+/* PDF VIEWER */
+.pdf-section { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; }
+.pdf-drop-area { border: 1.5px dashed var(--border2); border-radius: var(--radius-sm); padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--bg3); }
+.pdf-drop-area:hover { border-color: var(--accent); background: rgba(232,255,71,0.04); }
+.pdf-drop-area p { font-size: 12px; color: var(--text3); margin-top: 6px; }
+.pdf-drop-icon { font-size: 24px; }
+.pdf-preview-bar { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 8px 12px; margin-top: 8px; }
+.pdf-preview-name { font-size: 12px; color: var(--text); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'DM Mono', monospace; }
+.pdf-preview-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+/* PDF FULLSCREEN PANEL */
+.pdf-panel { position: fixed; top: 0; right: 0; width: 55%; height: 100vh; background: var(--bg2); border-left: 1px solid var(--border2); z-index: 50; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s ease; }
+.pdf-panel.open { transform: translateX(0); }
+.pdf-panel-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; }
+.pdf-panel-title { font-size: 13px; color: var(--text2); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'DM Mono', monospace; }
+.pdf-zoom-controls { display: flex; align-items: center; gap: 4px; }
+.pdf-zoom-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border2); background: transparent; color: var(--text); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+.pdf-zoom-btn:hover { background: var(--bg3); border-color: var(--accent); color: var(--accent); }
+.pdf-zoom-level { font-size: 12px; color: var(--text2); min-width: 38px; text-align: center; font-family: 'DM Mono', monospace; }
+.pdf-panel-body { flex: 1; overflow-y: auto; overflow-x: auto; background: #222; display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 12px; }
+.pdf-page-canvas { display: block; background: white; border-radius: 4px; max-width: 100%; }
+.pdf-panel-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 49; display: none; }
+.pdf-panel-overlay.open { display: block; }
+
+@media (max-width: 700px) {
+  .pdf-panel { width: 100%; }
+}
+
+/* NOTES */
+.notes-textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; line-height: 1.7; resize: vertical; min-height: 80px; outline: none; }
+.notes-textarea:focus { border-color: var(--accent); }
+
+/* LINKS */
+.links-list { display: flex; flex-direction: column; gap: 6px; }
+.link-item { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; }
+.link-label { font-size: 12px; color: var(--text); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.link-url { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; flex: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.link-open { color: var(--accent); text-decoration: none; font-size: 14px; flex-shrink: 0; }
+.link-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 16px; flex-shrink: 0; padding: 0 2px; }
+.link-del:hover { color: var(--red); }
+.add-link-form { display: flex; gap: 6px; margin-top: 6px; }
+.add-link-form input { flex: 1; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 7px 10px; color: var(--text); font-size: 12px; font-family: 'DM Sans', sans-serif; outline: none; }
+.add-link-form input:focus { border-color: var(--accent); }
+.add-link-form input::placeholder { color: var(--text3); }
+
+/* CHORDIFY LINK */
+.chordify-btn { display: flex; align-items: center; gap: 8px; background: #e94560; color: white; border: none; border-radius: var(--radius-sm); padding: 10px 16px; font-size: 13px; font-family: 'DM Sans', sans-serif; cursor: pointer; font-weight: 500; text-decoration: none; transition: background 0.15s; width: 100%; justify-content: center; }
+.chordify-btn:hover { background: #d03850; }
+.chordify-input { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text); font-size: 12px; font-family: 'DM Mono', monospace; outline: none; margin-bottom: 8px; }
+.chordify-input:focus { border-color: #e94560; }
+
+/* SESSION TIMER TOPBAR */
+.session-timer { display: flex; align-items: center; gap: 10px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 5px 12px; }
+.session-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.session-dot.inactive { background: var(--text3); animation: none; }
+@keyframes sessblink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.session-dot.active { animation: sessblink 1.4s infinite; }
+.session-time-col { display: flex; flex-direction: column; line-height: 1.2; }
+.session-time-val { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--accent); font-weight: 500; }
+.session-time-lbl { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; }
+.session-divider { width: 1px; height: 28px; background: var(--border2); }
+
+/* SONG TIMER CARD */
+.song-timer-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 8px; }
+.stc-row { display: flex; align-items: center; gap: 10px; }
+.stc-display { display: flex; flex-direction: column; flex: 1; }
+.stc-running { font-family: 'DM Mono', monospace; font-size: 20px; color: var(--accent); font-weight: 700; line-height: 1; }
+.stc-running.paused { color: var(--text3); }
+.stc-running.stopped { color: var(--text3); }
+.stc-sublabel { font-size: 10px; color: var(--text3); margin-top: 2px; }
+.stc-btns { display: flex; gap: 5px; flex-shrink: 0; }
+.stc-btn-play { display: flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 20px; border: none; font-size: 12px; cursor: pointer; font-weight: 500; background: var(--accent); color: #0e0e10; font-family: 'DM Sans', sans-serif; }
+.stc-btn-stop { display: flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; font-weight: 500; background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); font-family: 'DM Sans', sans-serif; }
+.stc-sessions-list { margin-top: 8px; border-top: 1px solid var(--border); padding-top: 7px; display: flex; flex-direction: column; gap: 3px; max-height: 90px; overflow-y: auto; }
+.stc-session-row { display: flex; justify-content: space-between; font-size: 10px; }
+.stc-session-date { color: var(--text3); }
+.stc-session-dur { color: var(--text2); font-family: 'DM Mono', monospace; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+.modal-overlay.hidden { display: none; }
+.modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); width: 100%; max-width: 480px; padding: 24px; }
+.modal-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); font-weight: 500; margin-bottom: 5px; display: block; font-family: 'DM Mono', monospace; }
+.form-input { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 9px 12px; color: var(--text); font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; }
+.form-input:focus { border-color: var(--accent); }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+
+/* DRIVE STATUS */
+.drive-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text3); }
+.drive-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); }
+.drive-dot.connected { background: var(--green); }
+.drive-dot.saving { background: var(--amber); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.section-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 16px; font-size: 13px; color: var(--text); z-index: 200; transform: translateY(60px); opacity: 0; transition: all 0.3s; }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+.mobile-sidebar-actions { display: none; gap: 6px; }
+@media (max-width: 480px) { .mobile-sidebar-actions { display: flex; } }
+
+/* MOBILE MENU BUTTON */
+.mobile-menu-btn { display: none; background: transparent; border: 1px solid var(--border2); color: var(--text); font-size: 18px; width: 36px; height: 36px; border-radius: var(--radius-sm); cursor: pointer; flex-shrink: 0; }
+
+/* MOBILE OVERLAY */
+.mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 40; }
+.mobile-overlay.open { display: block; }
+
+/* TABLET */
+@media (max-width: 700px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .sidebar { max-height: 260px; border-right: none; border-bottom: 1px solid var(--border); }
+  .meter-cards { grid-template-columns: 1fr 1fr; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .detail-full { grid-column: 1; }
+  .detail-2col { grid-column: 1; }
+}
+
+/* MOBILE */
+@media (max-width: 480px) {
+  /* Layout */
+  .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: 100vh; }
+
+  /* Topbar */
+  .topbar { padding: 0 12px; height: 52px; gap: 8px; }
+  .logo { font-size: 15px; }
+  .logo-dot { width: 7px; height: 7px; }
+  .mobile-menu-btn { display: flex; align-items: center; justify-content: center; margin-left: auto; }
+  .topbar-actions { display: none !important; }
+
+  /* Sidebar — drawer desde la izquierda */
+  .sidebar {
+    position: fixed;
+    top: 52px;
+    left: 0;
+    bottom: 0;
+    width: 80vw;
+    max-width: 300px;
+    z-index: 41;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    border-right: 1px solid var(--border2);
+    border-bottom: none;
+    max-height: none;
+    overflow-y: auto;
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  /* Main */
+  .main { overflow-y: auto; height: calc(100vh - 52px); background: var(--bg-main); }
+
+  /* Botón + Canción flotante */
+  .fab { display: flex; }
+
+  /* Detail */
+  .detail-content { padding: 12px; }
+  .detail-header { flex-direction: column; gap: 8px; }
+  .detail-header-actions { display: flex; gap: 6px; }
+  .detail-title { font-size: 17px; }
+  .meter-cards { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .meter-card { padding: 8px 10px; }
+  .meter-card-val { font-size: 14px; }
+  .detail-grid { grid-template-columns: 1fr; gap: 8px; }
+  .detail-full { grid-column: 1; }
+  .detail-2col { grid-column: 1; }
+
+  /* Capo — scroll horizontal en móvil */
+  .capo-selector { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+
+  /* PDF panel full screen en móvil */
+  .pdf-panel { width: 100%; }
+
+  /* Stats */
+  #statsContent { padding: 12px; }
+
+  /* Toast abajo centrado */
+  .toast { left: 12px; right: 12px; bottom: 12px; text-align: center; }
+
+  /* Song list items más grandes para tocar */
+  .song-item { padding: 12px 14px; }
+  .song-item-title { font-size: 14px; }
+  .song-item-artist { font-size: 12px; }
+
+  /* Filtros scrollables */
+  .sidebar-filters { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+  .filter-chip { flex-shrink: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-dot"></div>
+      Mi Repertorio
+    </div>
+    <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileSidebar()">☰</button>
+    <div class="topbar-actions">
+      <div class="session-timer">
+        <div class="session-dot active" id="sessionDot"></div>
+        <div class="session-time-col">
+          <span class="session-time-val" id="sessionClock">00:00:00</span>
+          <span class="session-time-lbl" id="sessionClockLbl">Sesión de hoy</span>
+        </div>
+        <div class="session-divider"></div>
+        <div class="session-time-col">
+          <span class="session-time-val" id="weekTimeVal">0h 0m</span>
+          <span class="session-time-lbl">Esta semana</span>
+        </div>
+        <div style="display:flex;gap:4px;margin-left:6px;">
+          <button id="pauseBtn" class="btn btn-ghost btn-sm" onclick="toggleSessionPause()" title="Pausar sesión">⏸</button>
+          <button class="btn btn-ghost btn-sm" onclick="endSession()" title="Terminar sesión y guardar" style="color:var(--accent);">⏹ Fin</button>
+        </div>
+      </div>
+      <div class="drive-status" id="driveStatus">
+        <div class="drive-dot" id="driveDot"></div>
+        <span id="driveLabel">Conectando...</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="exportData()">⬇ Exportar</button>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importInput').click()">⬆ Importar</button>
+      <input type="file" id="importInput" accept="application/json" style="display:none" onchange="importData(this)">
+      <button class="btn btn-ghost btn-sm" onclick="openAddModal()">+ Canción</button>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-search">
+      <input class="search-input" type="text" placeholder="Buscar canción o artista..." oninput="filterSongs()" id="searchInput">
+    </div>
+    <div class="sidebar-filters">
+      <span class="filter-chip active" onclick="setFilter('all', this)">Todas</span>
+      <span class="filter-chip" onclick="setFilter('aprendida', this)">Aprendidas</span>
+      <span class="filter-chip" onclick="setFilter('progreso', this)">Progreso</span>
+      <span class="filter-chip" onclick="setFilter('pendiente', this)">Pendientes</span>
+      <span class="filter-chip" onclick="setFilter('publica', this)">En público</span>
+      <span class="filter-chip" onclick="setFilter('solo', this)">Solo</span>
+      <span class="filter-chip" onclick="setFilter('ritmico', this)">Rítmico</span>
+    </div>
+    <div class="sidebar-stats" id="sidebarStats"></div>
+    <div class="song-list" id="songList"></div>
+    <div style="padding:10px 12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px;">
+      <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;" onclick="showStats()">📊 Estadísticas</button>
+      <div class="mobile-sidebar-actions">
+        <button class="btn btn-ghost btn-sm" onclick="toggleSessionPause();toggleMobileSidebar()" id="pauseBtnMobile">⏸ Pausa</button>
+        <button class="btn btn-ghost btn-sm" onclick="endSession();toggleMobileSidebar()" style="color:var(--accent);">⏹ Fin</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportData()">⬇</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importInput').click()">⬆</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main" id="mainArea">
+    <div class="detail-empty" id="emptyDetail">
+      <div class="detail-empty-icon">🎸</div>
+      <p>Selecciona una canción o añade una nueva</p>
+    </div>
+    <div class="detail-content" id="detailContent" style="display:none;"></div>
+    <div id="statsContent" style="display:none;padding:20px;max-width:860px;"></div>
+  </div>
+</div>
+
+<!-- FAB MÓVIL -->
+<button class="fab" onclick="openAddModal()" style="display:none;position:fixed;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--accent);color:#0e0e10;font-size:24px;border:none;cursor:pointer;z-index:30;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.4);" id="fabBtn">+</button>
+
+<!-- MOBILE SIDEBAR OVERLAY -->
+<div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileSidebar()"></div>
+
+<!-- PDF PANEL -->
+<div class="pdf-panel-overlay" id="pdfOverlay" onclick="closePdfPanel()"></div>
+<div class="pdf-panel" id="pdfPanel">
+  <div class="pdf-panel-header">
+    <span class="pdf-panel-title" id="pdfPanelTitle">Tablatura PDF</span>
+    <div class="pdf-zoom-controls">
+      <button class="pdf-zoom-btn" onclick="pdfZoom(-0.25)" title="Reducir">−</button>
+      <span class="pdf-zoom-level" id="pdfZoomLabel">100%</span>
+      <button class="pdf-zoom-btn" onclick="pdfZoom(+0.25)" title="Ampliar">+</button>
+      <button class="pdf-zoom-btn" onclick="pdfFit()" title="Ajustar">⊡</button>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="closePdfPanel()">✕ Cerrar</button>
+  </div>
+  <div class="pdf-panel-body" id="pdfPanelBody"></div>
+</div>
+
+<!-- MODAL EDITAR DÍA -->
+<div class="modal-overlay hidden" id="editDayModal">
+  <div class="modal">
+    <div class="modal-title">Editar tiempo del día</div>
+    <div id="editDayDateLabel" style="font-size:13px;color:var(--text2);margin-bottom:14px;"></div>
+    <div class="form-group">
+      <label class="form-label">Duración total del día</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input class="form-input" type="number" id="editDayHours" placeholder="h" min="0" max="23" style="width:70px;">
+        <span style="color:var(--text2);font-size:14px;">h</span>
+        <input class="form-input" type="number" id="editDayMins" placeholder="min" min="0" max="59" style="width:70px;">
+        <span style="color:var(--text2);font-size:14px;">min</span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeEditDayModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmEditDay()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SESIÓN MANUAL -->
+<div class="modal-overlay hidden" id="manualSessionModal">
+  <div class="modal">
+    <div class="modal-title">Añadir sesión manual</div>
+    <div class="form-group">
+      <label class="form-label">Fecha</label>
+      <input class="form-input" type="date" id="manualDate">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Hora (opcional)</label>
+      <input class="form-input" type="time" id="manualTime" value="10:00">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Duración</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input class="form-input" type="number" id="manualHours" placeholder="h" min="0" max="23" style="width:70px;">
+        <span style="color:var(--text2);font-size:14px;">h</span>
+        <input class="form-input" type="number" id="manualMins" placeholder="min" min="0" max="59" style="width:70px;">
+        <span style="color:var(--text2);font-size:14px;">min</span>
+        <input class="form-input" type="number" id="manualSecs" placeholder="seg" min="0" max="59" style="width:70px;">
+        <span style="color:var(--text2);font-size:14px;">seg</span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeManualSessionModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmManualSession()">Añadir</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AÑADIR -->
+<div class="modal-overlay hidden" id="addModal">
+  <div class="modal">
+    <div class="modal-title">Nueva canción</div>
+    <div class="form-group">
+      <label class="form-label">Título</label>
+      <input class="form-input" id="newTitle" placeholder="Nombre de la canción">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Artista</label>
+      <input class="form-input" id="newArtist" placeholder="Artista o banda">
+    </div>
+    <div class="form-group">
+      <label class="form-label">URL de Chordify (opcional)</label>
+      <input class="form-input" id="newChordify" placeholder="https://chordify.net/...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeAddModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="addSong()">Añadir</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AÑADIR ENLACE -->
+<div class="modal-overlay hidden" id="linkModal">
+  <div class="modal">
+    <div class="modal-title">Añadir enlace</div>
+    <div class="form-group">
+      <label class="form-label">Etiqueta</label>
+      <input class="form-input" id="linkLabel" placeholder="ej: Tutorial completo — JustinGuitar">
+    </div>
+    <div class="form-group">
+      <label class="form-label">URL</label>
+      <input class="form-input" id="linkUrl" placeholder="https://youtube.com/...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeLinkModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmAddLink()">Añadir</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────
+let songs = [];
+let currentId = null;
+let activeFilter = 'all';
+let saveTimer = null;
+let supabaseSaveTimer = null;
+
+const STORAGE_KEY = 'mi_repertorio_v1';
+const SUPABASE_URL = 'https://udmqhdkpyswhickicywd.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_uyUltkJ7MNMbW7CO9kacJg_B1L2MdhL';
+
+// ─── INIT ─────────────────────────────────────────────────────────────
+function init() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try { songs = JSON.parse(saved); } catch(e) { songs = []; }
+  }
+  renderSidebar();
+  startSessionTimer();
+  updateTotalTimeDisplay();
+  checkMobileUI();
+  loadFromSupabase();
+}
+
+// ─── SONGS DATA ───────────────────────────────────────────────────────
+function newSong(title, artist, chordify) {
+  return {
+    id: Date.now().toString(),
+    title, artist,
+    chordifyUrl: chordify || '',
+    tablature: '',
+    notes: '',
+    links: [],
+    estado: 'pendiente',
+    estilo: null,
+    capo: 0,
+    dificultad: 0,
+    publica: false,
+    ultimaVez: null,
+    tiempoTotal: 0,
+    sesionesTimer: [],
+    createdAt: new Date().toISOString()
+  };
+}
+
+function getSong(id) { return songs.find(s => s.id === id); }
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
+  scheduleSupabaseSave();
+}
+
+function scheduleSupabaseSave() {
+  clearTimeout(supabaseSaveTimer);
+  updateDbStatus('saving');
+  supabaseSaveTimer = setTimeout(() => saveToSupabase(), 2000);
+}
+
+// ─── RENDER SIDEBAR ───────────────────────────────────────────────────
+function renderSidebar() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  let visible = songs.filter(s => {
+    const matchSearch = !search || s.title.toLowerCase().includes(search) || s.artist.toLowerCase().includes(search);
+    const matchFilter = activeFilter === 'all' ||
+      (activeFilter === 'publica' && s.publica) ||
+      (activeFilter === 'solo' && (s.estilo === 'solo' || s.estilo === 'ambos')) ||
+      (activeFilter === 'ritmico' && (s.estilo === 'ritmico' || s.estilo === 'ambos')) ||
+      s.estado === activeFilter;
+    return matchSearch && matchFilter;
+  });
+
+  const aprendidas = songs.filter(s => s.estado === 'aprendida').length;
+  const progreso = songs.filter(s => s.estado === 'progreso').length;
+  const pendientes = songs.filter(s => s.estado === 'pendiente').length;
+
+  document.getElementById('sidebarStats').innerHTML = `
+    <div class="stat-mini"><div class="stat-mini-num">${aprendidas}</div><div class="stat-mini-lbl">Listas</div></div>
+    <div class="stat-mini"><div class="stat-mini-num">${progreso}</div><div class="stat-mini-lbl">Progreso</div></div>
+    <div class="stat-mini"><div class="stat-mini-num">${pendientes}</div><div class="stat-mini-lbl">Pendientes</div></div>
+  `;
+
+  const list = document.getElementById('songList');
+  if (visible.length === 0) {
+    list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px;">Sin resultados</div>`;
+    return;
+  }
+  list.innerHTML = visible.map(s => {
+    const estadoBadge = s.estado === 'aprendida'
+      ? `<span class="badge badge-green">Aprendida</span>`
+      : s.estado === 'progreso'
+      ? `<span class="badge badge-amber">En progreso</span>`
+      : `<span class="badge badge-gray">Pendiente</span>`;
+    const pubBadge = s.publica ? `<span class="badge badge-accent">Público</span>` : '';
+    const difBadge = s.dificultad ? `<span class="badge badge-blue">${'★'.repeat(s.dificultad)}</span>` : '';
+    const estiloBadge = s.estilo === 'solo' ? `<span class="badge badge-blue">Solo</span>`
+      : s.estilo === 'ritmico' ? `<span class="badge badge-accent">Rítmico</span>`
+      : s.estilo === 'ambos' ? `<span class="badge" style="background:rgba(167,139,250,0.15);color:#a78bfa;">Ambos</span>` : '';
+    const capoBadge = s.capo ? `<span class="badge badge-gray">Capo ${s.capo}</span>` : '';
+    return `
+      <div class="song-item ${s.id === currentId ? 'active' : ''}" onclick="selectSong('${s.id}')">
+        <div class="song-item-title">${s.title}</div>
+        <div class="song-item-artist">${s.artist}</div>
+        <div class="song-item-meta">${estadoBadge}${estiloBadge}${capoBadge}${pubBadge}${difBadge}</div>
+      </div>`;
+  }).join('');
+}
+
+function filterSongs() { renderSidebar(); }
+
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderSidebar();
+}
+
+// ─── SELECT SONG ──────────────────────────────────────────────────────
+function selectSong(id) {
+  currentId = id;
+  document.getElementById('statsContent').style.display = 'none';
+  if (isMobile()) closeMobileSidebar();
+  renderSidebar();
+  renderDetail();
+}
+
+function renderDetail() {
+  const s = getSong(currentId);
+  if (!s) return;
+  document.getElementById('emptyDetail').style.display = 'none';
+  document.getElementById('statsContent').style.display = 'none';
+  document.getElementById('detailContent').style.display = 'block';
+
+  const ultimaVezStr = s.ultimaVez
+    ? new Date(s.ultimaVez).toLocaleDateString('es-ES', {day:'numeric', month:'short', year:'numeric'})
+    : '—';
+
+  document.getElementById('detailContent').innerHTML = `
+    <div class="detail-header">
+      <div class="detail-title-block">
+        <div class="detail-title">${s.title}</div>
+        <div class="detail-artist">${s.artist}</div>
+      </div>
+      <div class="detail-header-actions">
+        <button class="btn btn-ghost btn-sm" onclick="tocadaHoy()">+ Tocada hoy</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteSong('${s.id}')">Eliminar</button>
+      </div>
+    </div>
+
+    <div class="meter-cards">
+      <div class="meter-card">
+        <div class="meter-card-val">${s.veces}</div>
+        <div class="meter-card-lbl">Veces tocada</div>
+      </div>
+      <div class="meter-card">
+        <div class="meter-card-val">${ultimaVezStr}</div>
+        <div class="meter-card-lbl">Última vez</div>
+      </div>
+      <div class="meter-card">
+        <div class="meter-card-val">${fmtHM(s.tiempoTotal||0)}</div>
+        <div class="meter-card-lbl">Tiempo total</div>
+      </div>
+      <div class="meter-card">
+        <div class="meter-card-val">${s.publica ? 'Sí' : 'No'}</div>
+        <div class="meter-card-lbl">En público</div>
+      </div>
+    </div>
+
+    ${renderSongTimer(s)}
+
+    <div class="detail-grid">
+
+      <div class="card">
+        <div class="card-label">Estado</div>
+        <div class="status-pills">
+          <button class="status-pill ${s.estado==='aprendida'?'active-aprendida':''}" onclick="setEstado('aprendida')">Aprendida</button>
+          <button class="status-pill ${s.estado==='progreso'?'active-progreso':''}" onclick="setEstado('progreso')">Progreso</button>
+          <button class="status-pill ${s.estado==='pendiente'?'active-pendiente':''}" onclick="setEstado('pendiente')">Pendiente</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Estilo</div>
+        <div class="estilo-pills">
+          <button class="estilo-pill ${s.estilo==='solo'?'active-solo':''}" onclick="setEstilo('solo')">Solo</button>
+          <button class="estilo-pill ${s.estilo==='ritmico'?'active-ritmico':''}" onclick="setEstilo('ritmico')">Rítmico</button>
+          <button class="estilo-pill ${s.estilo==='ambos'?'active-ambos':''}" onclick="setEstilo('ambos')">Ambos</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Dificultad</div>
+        <div class="stars" id="starsRow">
+          ${[1,2,3,4,5].map(n => `<span class="star ${n<=s.dificultad?'lit':''}" onclick="setDificultad(${n})">★</span>`).join('')}
+        </div>
+      </div>
+
+      <div class="card detail-2col">
+        <div class="card-label">Capo</div>
+        <div class="capo-selector">
+          ${[0,1,2,3,4,5,6,7,8,9,10,11,12].map(n => `<button class="capo-btn ${(s.capo||0)===n?'active':''}" onclick="setCapo(${n})">${n===0?'—':n}</button>`).join('')}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">¿En público?</div>
+        <div class="toggle-wrap">
+          <button class="toggle ${s.publica?'on':''}" id="togglePublica" onclick="togglePublica()"></button>
+          <span class="toggle-label" id="toggleLabel">${s.publica ? 'Sí' : 'No'}</span>
+        </div>
+      </div>
+
+      <div class="card detail-2col">
+        <div class="card-label">Chordify</div>
+        <input class="chordify-input" id="chordifyInput" placeholder="https://chordify.net/..." value="${s.chordifyUrl || ''}" oninput="updateChordify()">
+        ${s.chordifyUrl ? `<a class="chordify-btn" href="${s.chordifyUrl}" target="_blank" onclick="startSongTimerFromChordify()">Abrir en Chordify ↗</a>` : `<div style="font-size:11px;color:var(--text3)">Pega la URL arriba</div>`}
+      </div>
+
+      <div class="card detail-full">
+        <div class="card-label">Tablatura / Solo</div>
+        <textarea class="tab-textarea" id="tabInput" placeholder="Notas rápidas: capo, acorde clave, truco del solo..." oninput="updateTab()">${s.tablature}</textarea>
+        <div class="pdf-section">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);font-weight:500;margin-bottom:8px;font-family:'DM Mono',monospace;">PDF de tablatura</div>
+          ${s.pdfName ? `
+            <div class="pdf-preview-bar">
+              <span style="font-size:16px;">📄</span>
+              <span class="pdf-preview-name">${s.pdfName}</span>
+              <div class="pdf-preview-actions">
+                <button class="btn btn-ghost btn-sm" onclick="openPdfPanel()">⛶ Ver / Zoom</button>
+                <button class="btn btn-danger btn-sm" onclick="removePdf()">× Quitar</button>
+              </div>
+            </div>` : `
+            <div class="pdf-drop-area" onclick="document.getElementById('pdfFileInput').click()" ondragover="event.preventDefault()" ondrop="handlePdfDrop(event)">
+              <div class="pdf-drop-icon">📄</div>
+              <p>Toca para subir un PDF de tablatura</p>
+              <p style="font-size:11px;margin-top:2px;">o arrastra el archivo aquí</p>
+            </div>`}
+          <input type="file" id="pdfFileInput" accept="application/pdf" style="display:none" onchange="handlePdfFile(this.files[0])">
+        </div>
+      </div>
+
+      <div class="card detail-full">
+        <div class="card-label">Tutoriales y enlaces</div>
+        <div class="links-list" id="linksList">${renderLinks(s)}</div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="openLinkModal()">+ Añadir enlace</button>
+      </div>
+
+      <div class="card detail-full">
+        <div class="card-label">Mis notas</div>
+        <textarea class="notes-textarea" id="notesInput" placeholder="Capo, tonalidad, trucos, puntos donde me atasco..." oninput="updateNotes()">${s.notes}</textarea>
+      </div>
+
+    </div>
+  `;
+}
+
+function renderLinks(s) {
+  if (!s.links || s.links.length === 0) return `<div style="font-size:12px;color:var(--text3);">Sin enlaces todavía</div>`;
+  return s.links.map((l, i) => `
+    <div class="link-item">
+      <span class="link-label">${l.label}</span>
+      <span class="link-url">${l.url}</span>
+      <a class="link-open" href="${l.url}" target="_blank">↗</a>
+      <button class="link-del" onclick="deleteLink(${i})">×</button>
+    </div>`).join('');
+}
+
+// ─── SONG ACTIONS ─────────────────────────────────────────────────────
+function setEstilo(e) {
+  const s = getSong(currentId); if(!s) return;
+  s.estilo = s.estilo === e ? null : e;
+  save(); renderDetail(); renderSidebar();
+}
+
+function setCapo(n) {
+  const s = getSong(currentId); if(!s) return;
+  s.capo = n;
+  save(); renderDetail();
+}
+
+function setEstado(e) {
+  const s = getSong(currentId); if(!s) return;
+  s.estado = e; save(); renderDetail(); renderSidebar();
+}
+
+function setDificultad(n) {
+  const s = getSong(currentId); if(!s) return;
+  s.dificultad = s.dificultad === n ? 0 : n;
+  save(); renderDetail(); renderSidebar();
+}
+
+function togglePublica() {
+  const s = getSong(currentId); if(!s) return;
+  s.publica = !s.publica; save(); renderDetail(); renderSidebar();
+}
+
+function tocadaHoy() {
+  const s = getSong(currentId); if(!s) return;
+  s.veces = (s.veces || 0) + 1;
+  s.ultimaVez = new Date().toISOString();
+  save(); renderDetail(); showToast('¡Registrada! Total: ' + s.veces + ' veces');
+}
+
+function updateTab() {
+  const s = getSong(currentId); if(!s) return;
+  s.tablature = document.getElementById('tabInput').value;
+  save();
+}
+
+function updateNotes() {
+  const s = getSong(currentId); if(!s) return;
+  s.notes = document.getElementById('notesInput').value;
+  save();
+}
+
+function updateChordify() {
+  const s = getSong(currentId); if(!s) return;
+  s.chordifyUrl = document.getElementById('chordifyInput').value;
+  save();
+}
+
+function deleteLink(i) {
+  const s = getSong(currentId); if(!s) return;
+  s.links.splice(i, 1);
+  save();
+  document.getElementById('linksList').innerHTML = renderLinks(s);
+}
+
+function deleteSong(id) {
+  if (!confirm('¿Eliminar esta canción?')) return;
+  songs = songs.filter(s => s.id !== id);
+  currentId = null;
+  save();
+  document.getElementById('emptyDetail').style.display = 'flex';
+  document.getElementById('detailContent').style.display = 'none';
+  renderSidebar();
+  showToast('Canción eliminada');
+}
+
+// ─── MODALS ───────────────────────────────────────────────────────────
+function openAddModal() { document.getElementById('addModal').classList.remove('hidden'); document.getElementById('newTitle').focus(); }
+function closeAddModal() { document.getElementById('addModal').classList.add('hidden'); }
+
+function addSong() {
+  const title = document.getElementById('newTitle').value.trim();
+  const artist = document.getElementById('newArtist').value.trim();
+  const chordify = document.getElementById('newChordify').value.trim();
+  if (!title || !artist) { showToast('Rellena título y artista'); return; }
+  const s = newSong(title, artist, chordify);
+  songs.unshift(s);
+  save();
+  closeAddModal();
+  document.getElementById('newTitle').value = '';
+  document.getElementById('newArtist').value = '';
+  document.getElementById('newChordify').value = '';
+  renderSidebar();
+  selectSong(s.id);
+  showToast('Canción añadida');
+}
+
+function openManualSessionModal() {
+  editingSessionIdx = null;
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('manualDate').value = today;
+  document.getElementById('manualTime').value = '10:00';
+  document.getElementById('manualHours').value = '';
+  document.getElementById('manualMins').value = '';
+  document.getElementById('manualSecs').value = '';
+  document.querySelector('#manualSessionModal .modal-title').textContent = 'Añadir sesión manual';
+  document.getElementById('manualSessionModal').classList.remove('hidden');
+}
+
+function closeManualSessionModal() {
+  document.getElementById('manualSessionModal').classList.add('hidden');
+  editingSessionIdx = null;
+}
+
+function confirmManualSession() {
+  const dateVal = document.getElementById('manualDate').value;
+  const timeVal = document.getElementById('manualTime').value || '00:00';
+  const h = parseInt(document.getElementById('manualHours').value) || 0;
+  const m = parseInt(document.getElementById('manualMins').value) || 0;
+  const sec = parseInt(document.getElementById('manualSecs').value) || 0;
+  const dur = h * 3600 + m * 60 + sec;
+  if (!dateVal) { showToast('Pon una fecha'); return; }
+  if (dur <= 0) { showToast('Pon una duración mayor que 0'); return; }
+  const s = getSong(currentId); if (!s) return;
+  const startTs = new Date(`${dateVal}T${timeVal}:00`).getTime();
+  if (!s.sesionesTimer) s.sesionesTimer = [];
+
+  if (editingSessionIdx !== null) {
+    // Modo edición — restar duración vieja, poner nueva
+    const oldDur = s.sesionesTimer[editingSessionIdx].dur;
+    s.tiempoTotal = Math.max(0, (s.tiempoTotal || 0) - oldDur) + dur;
+    s.sesionesTimer[editingSessionIdx] = { start: startTs, dur, manual: true };
+    showToast('Sesión actualizada: ' + fmtHMS(dur));
+  } else {
+    // Modo añadir
+    s.sesionesTimer.push({ start: startTs, dur, manual: true });
+    s.tiempoTotal = (s.tiempoTotal || 0) + dur;
+    showToast('Sesión manual añadida: ' + fmtHMS(dur));
+  }
+
+  s.sesionesTimer.sort((a, b) => a.start - b.start);
+  s._baseTiempoTotal = s.tiempoTotal;
+  s.ultimaVez = new Date(Math.max(...s.sesionesTimer.map(se => se.start))).toISOString();
+  save();
+  closeManualSessionModal();
+  renderDetail();
+  const el = document.getElementById('sessionHistory');
+  if (el) el.style.display = 'block';
+}
+
+let editDayKey = null;
+let editDayOldSecs = 0;
+
+function openEditDayModal(dayKey, currentSecs) {
+  editDayKey = dayKey;
+  editDayOldSecs = currentSecs;
+  const d = new Date(dayKey);
+  document.getElementById('editDayDateLabel').textContent = d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const h = Math.floor(currentSecs / 3600);
+  const m = Math.floor((currentSecs % 3600) / 60);
+  document.getElementById('editDayHours').value = h || '';
+  document.getElementById('editDayMins').value = m || '';
+  document.getElementById('editDayModal').classList.remove('hidden');
+}
+
+function closeEditDayModal() {
+  document.getElementById('editDayModal').classList.add('hidden');
+  editDayKey = null;
+}
+
+function confirmEditDay() {
+  if (!editDayKey) return;
+  const h = parseInt(document.getElementById('editDayHours').value) || 0;
+  const m = parseInt(document.getElementById('editDayMins').value) || 0;
+  const newSecs = h * 3600 + m * 60;
+  if (newSecs < 0) { showToast('Duración no válida'); return; }
+
+  // Actualizar daily_sessions
+  const daily = JSON.parse(localStorage.getItem('daily_sessions') || '{}');
+  daily[editDayKey] = newSecs;
+  localStorage.setItem('daily_sessions', JSON.stringify(daily));
+
+  // Actualizar weekly_sessions con la diferencia
+  const diff = newSecs - editDayOldSecs;
+  const weekKey = getWeekKey(new Date(editDayKey));
+  const weekly = JSON.parse(localStorage.getItem('weekly_sessions') || '{}');
+  weekly[weekKey] = Math.max(0, (weekly[weekKey] || 0) + diff);
+  localStorage.setItem('weekly_sessions', JSON.stringify(weekly));
+
+  // Actualizar total
+  const prevTotal = parseInt(localStorage.getItem('total_session_secs') || '0');
+  localStorage.setItem('total_session_secs', Math.max(0, prevTotal + diff));
+
+  closeEditDayModal();
+  renderStatTab(statCurrentTab);
+  showToast('Tiempo del día actualizado');
+}
+
+function openLinkModal() { document.getElementById('linkModal').classList.remove('hidden'); document.getElementById('linkLabel').focus(); }
+function closeLinkModal() { document.getElementById('linkModal').classList.add('hidden'); }
+
+function confirmAddLink() {
+  const label = document.getElementById('linkLabel').value.trim();
+  const url = document.getElementById('linkUrl').value.trim();
+  if (!label || !url) { showToast('Rellena etiqueta y URL'); return; }
+  const s = getSong(currentId); if (!s) return;
+  if (!s.links) s.links = [];
+  s.links.push({ label, url });
+  save();
+  closeLinkModal();
+  document.getElementById('linkLabel').value = '';
+  document.getElementById('linkUrl').value = '';
+  document.getElementById('linksList').innerHTML = renderLinks(s);
+  showToast('Enlace añadido');
+}
+
+// ─── SUPABASE ─────────────────────────────────────────────────────────
+function sbHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`
+  };
+}
+
+function updateDbStatus(state) {
+  const dot = document.getElementById('driveDot');
+  const label = document.getElementById('driveLabel');
+  if (!dot || !label) return;
+  dot.className = 'drive-dot';
+  if (state === 'connected') { dot.classList.add('connected'); label.textContent = 'Sincronizado ✓'; }
+  else if (state === 'saving') { dot.classList.add('saving'); label.textContent = 'Guardando...'; }
+  else if (state === 'saved') { dot.classList.add('connected'); label.textContent = 'Guardado ✓'; setTimeout(() => { label.textContent = 'Sincronizado ✓'; }, 2000); }
+  else if (state === 'error') { label.textContent = 'Error conexión'; }
+  else { label.textContent = 'Sin conexión'; }
+}
+
+// Convertir canción local → formato Supabase
+function songToRow(s) {
+  return {
+    id: s.id,
+    title: s.title || '',
+    artist: s.artist || '',
+    chordify_url: s.chordifyUrl || '',
+    tablature: s.tablature || '',
+    notes: s.notes || '',
+    estado: s.estado || 'pendiente',
+    estilo: s.estilo || null,
+    capo: s.capo || 0,
+    dificultad: s.dificultad || 0,
+    publica: s.publica || false,
+    tiempo_total: s.tiempoTotal || 0,
+    ultima_vez: s.ultimaVez || null,
+    pdf_name: s.pdfName || null,
+    pdf_data: s.pdfData || null,
+    links: s.links || [],
+    created_at: s.createdAt || new Date().toISOString()
+  };
+}
+
+// Convertir fila Supabase → formato local
+function rowToSong(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    artist: row.artist,
+    chordifyUrl: row.chordify_url || '',
+    tablature: row.tablature || '',
+    notes: row.notes || '',
+    estado: row.estado || 'pendiente',
+    estilo: row.estilo || null,
+    capo: row.capo || 0,
+    dificultad: row.dificultad || 0,
+    publica: row.publica || false,
+    tiempoTotal: row.tiempo_total || 0,
+    ultimaVez: row.ultima_vez || null,
+    pdfName: row.pdf_name || null,
+    pdfData: row.pdf_data || null,
+    links: row.links || [],
+    sesionesTimer: [],
+    createdAt: row.created_at || new Date().toISOString()
+  };
+}
+
+async function loadFromSupabase() {
+  updateDbStatus('saving'); // muestra "Conectando..."
+  try {
+    // Cargar canciones
+    const songsResp = await fetch(`${SUPABASE_URL}/rest/v1/songs?select=*&order=created_at.asc`, {
+      headers: sbHeaders()
+    });
+    if (!songsResp.ok) { updateDbStatus('error'); return; }
+    const rows = await songsResp.json();
+
+    if (rows.length === 0) {
+      // Sin datos en Supabase — subir los locales si los hay
+      if (songs.length > 0) {
+        await saveToSupabase();
+      } else {
+        updateDbStatus('connected');
+      }
+      return;
+    }
+
+    // Cargar sesiones de cronómetro
+    const sessResp = await fetch(`${SUPABASE_URL}/rest/v1/song_sessions?select=*`, {
+      headers: sbHeaders()
+    });
+    const sessRows = sessResp.ok ? await sessResp.json() : [];
+
+    // Agrupar sesiones por song_id
+    const sessMap = {};
+    sessRows.forEach(se => {
+      if (!sessMap[se.song_id]) sessMap[se.song_id] = [];
+      sessMap[se.song_id].push({ start: se.start_ts, dur: se.dur, manual: se.manual });
+    });
+
+    // Construir canciones completas
+    const loaded = rows.map(row => {
+      const s = rowToSong(row);
+      s.sesionesTimer = (sessMap[row.id] || []).sort((a,b) => a.start - b.start);
+      return s;
+    });
+
+    // Cargar tiempos globales
+    const timeResp = await fetch(`${SUPABASE_URL}/rest/v1/time_log?select=*`, {
+      headers: sbHeaders()
+    });
+    if (timeResp.ok) {
+      const timeLogs = await timeResp.json();
+      timeLogs.forEach(t => {
+        if (t.period_type === 'total') localStorage.setItem('total_session_secs', t.secs);
+        else if (t.period_type === 'weekly') {
+          const weekly = JSON.parse(localStorage.getItem('weekly_sessions') || '{}');
+          weekly[t.period_key] = Math.max(weekly[t.period_key] || 0, t.secs);
+          localStorage.setItem('weekly_sessions', JSON.stringify(weekly));
+        } else if (t.period_type === 'daily') {
+          const daily = JSON.parse(localStorage.getItem('daily_sessions') || '{}');
+          daily[t.period_key] = Math.max(daily[t.period_key] || 0, t.secs);
+          localStorage.setItem('daily_sessions', JSON.stringify(daily));
+        }
+      });
+    }
+
+    songs = loaded;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
+    renderSidebar();
+    updateTotalTimeDisplay();
+    updateDbStatus('connected');
+    showToast('✓ ' + loaded.length + ' canciones cargadas');
+  } catch(e) {
+    console.error('Supabase load error:', e);
+    updateDbStatus('error');
+  }
+}
+
+async function saveToSupabase() {
+  if (songs.length === 0) { updateDbStatus('connected'); return; }
+  try {
+    // 1. Upsert canciones (tiempo_total y ultima_vez incluidos)
+    const rows = songs.map(songToRow);
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/songs`, {
+      method: 'POST',
+      headers: { ...sbHeaders(), 'Prefer': 'return=minimal,resolution=merge-duplicates' },
+      body: JSON.stringify(rows)
+    });
+    if (!resp.ok) {
+      const err = await resp.text();
+      console.error('Songs upsert error:', resp.status, err);
+      updateDbStatus('error');
+      return;
+    }
+
+    // 2. Sesiones — borrar todas y reinsertar limpio
+    const allSessions = [];
+    songs.forEach(s => {
+      (s.sesionesTimer || []).forEach(se => {
+        allSessions.push({
+          id: `${s.id}_${se.start}`,
+          song_id: s.id,
+          start_ts: se.start,
+          dur: se.dur,
+          manual: se.manual || false
+        });
+      });
+    });
+
+    // Borrar todas las sesiones existentes primero
+    await fetch(`${SUPABASE_URL}/rest/v1/song_sessions?id=neq.NONE`, {
+      method: 'DELETE',
+      headers: sbHeaders()
+    });
+
+    // Reinsertar solo si hay sesiones
+    if (allSessions.length > 0) {
+      await fetch(`${SUPABASE_URL}/rest/v1/song_sessions`, {
+        method: 'POST',
+        headers: { ...sbHeaders(), 'Prefer': 'return=minimal' },
+        body: JSON.stringify(allSessions)
+      });
+    }
+
+    // 3. Guardar tiempos globales — borrar y reinsertar
+    const totalSecs = parseInt(localStorage.getItem('total_session_secs') || '0');
+    const weekly = JSON.parse(localStorage.getItem('weekly_sessions') || '{}');
+    const daily = JSON.parse(localStorage.getItem('daily_sessions') || '{}');
+
+    const timeLogs = [
+      { period_key: 'total', period_type: 'total', secs: totalSecs, updated_at: new Date().toISOString() },
+      ...Object.keys(weekly).map(k => ({ period_key: k, period_type: 'weekly', secs: weekly[k], updated_at: new Date().toISOString() })),
+      ...Object.keys(daily).map(k => ({ period_key: k, period_type: 'daily', secs: daily[k], updated_at: new Date().toISOString() }))
+    ];
+
+    // Borrar todos los registros de tiempo
+    await fetch(`${SUPABASE_URL}/rest/v1/time_log?id=neq.NONE`, {
+      method: 'DELETE',
+      headers: sbHeaders()
+    });
+
+    // Reinsertar
+    if (timeLogs.length > 0) {
+      await fetch(`${SUPABASE_URL}/rest/v1/time_log`, {
+        method: 'POST',
+        headers: { ...sbHeaders(), 'Prefer': 'return=minimal' },
+        body: JSON.stringify(timeLogs)
+      });
+    }
+
+    updateDbStatus('saved');
+  } catch(e) {
+    console.error('Supabase save error:', e);
+    updateDbStatus('error');
+  }
+}
+
+// ─── EXPORT / IMPORT ──────────────────────────────────────────────────
+function exportData() {
+  const blob = new Blob([JSON.stringify(songs, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mi_repertorio_backup.json';
+  a.click();
+  showToast('Backup exportado');
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      // Aceptar formato array directo O formato {songs, totalSecs, weeklySessions}
+      let imported;
+      if (Array.isArray(parsed)) {
+        imported = parsed;
+      } else if (parsed && Array.isArray(parsed.songs)) {
+        imported = parsed.songs;
+        if (parsed.totalSecs) localStorage.setItem('total_session_secs', parsed.totalSecs);
+        if (parsed.weeklySessions) localStorage.setItem('weekly_sessions', JSON.stringify(parsed.weeklySessions));
+        if (parsed.dailySessions) localStorage.setItem('daily_sessions', JSON.stringify(parsed.dailySessions));
+      } else {
+        showToast('Archivo no válido');
+        return;
+      }
+      if (imported.length === 0) { showToast('El archivo está vacío'); return; }
+      if (!confirm(`¿Importar ${imported.length} canciones? Esto reemplazará tus datos actuales.`)) return;
+      songs = imported;
+      save();
+      currentId = null;
+      renderSidebar();
+      document.getElementById('detailContent').style.display = 'none';
+      document.getElementById('statsContent').style.display = 'none';
+      document.getElementById('emptyDetail').style.display = 'flex';
+      showToast(`${imported.length} canciones importadas — subiendo a Supabase...`);
+      saveToSupabase();
+    } catch(e) {
+      showToast('Error al leer el archivo');
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ─── PDF HANDLING ─────────────────────────────────────────────────────
+let pdfZoomLevel = 1.0;
+let pdfDoc = null;
+let currentPdfData = null;
+
+function handlePdfDrop(e) {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') handlePdfFile(file);
+}
+
+function handlePdfFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = e.target.result;
+    const s = getSong(currentId); if (!s) return;
+    s.pdfName = file.name;
+    s.pdfData = data;
+    currentPdfData = data;
+    save();
+    renderDetail();
+    showToast('PDF cargado: ' + file.name);
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePdf() {
+  const s = getSong(currentId); if (!s) return;
+  if (!confirm('¿Quitar el PDF de esta canción?')) return;
+  delete s.pdfName;
+  delete s.pdfData;
+  currentPdfData = null;
+  pdfDoc = null;
+  save();
+  renderDetail();
+  showToast('PDF eliminado');
+}
+
+function openPdfPanel() {
+  const s = getSong(currentId); if (!s || !s.pdfData) return;
+  currentPdfData = s.pdfData;
+  document.getElementById('pdfPanelTitle').textContent = s.pdfName || 'Tablatura PDF';
+  document.getElementById('pdfPanel').classList.add('open');
+  document.getElementById('pdfOverlay').classList.add('open');
+  pdfZoomLevel = 1.0;
+  document.getElementById('pdfZoomLabel').textContent = '100%';
+  renderPdf();
+}
+
+function closePdfPanel() {
+  document.getElementById('pdfPanel').classList.remove('open');
+  document.getElementById('pdfOverlay').classList.remove('open');
+}
+
+function pdfZoom(delta) {
+  pdfZoomLevel = Math.min(3, Math.max(0.25, pdfZoomLevel + delta));
+  document.getElementById('pdfZoomLabel').textContent = Math.round(pdfZoomLevel * 100) + '%';
+  renderPdf();
+}
+
+function pdfFit() {
+  pdfZoomLevel = 1.0;
+  document.getElementById('pdfZoomLabel').textContent = '100%';
+  renderPdf();
+}
+
+async function renderPdf() {
+  if (!currentPdfData) return;
+  const body = document.getElementById('pdfPanelBody');
+  body.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:2rem;">Cargando PDF...</div>';
+  try {
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const loadingTask = pdfjsLib.getDocument(currentPdfData);
+    pdfDoc = await loadingTask.promise;
+    body.innerHTML = '';
+    const panelWidth = document.getElementById('pdfPanel').offsetWidth - 32;
+    for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+      const page = await pdfDoc.getPage(pageNum);
+      const baseViewport = page.getViewport({ scale: 1 });
+      const scale = (panelWidth / baseViewport.width) * pdfZoomLevel;
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement('canvas');
+      canvas.className = 'pdf-page-canvas';
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      body.appendChild(canvas);
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+    }
+  } catch(e) {
+    body.innerHTML = `<div style="color:var(--red);font-size:13px;padding:2rem;">Error al cargar el PDF. Asegúrate de que el archivo no está dañado.</div>`;
+  }
+}
+
+let sessionPaused = false;
+let sessionPauseStart = null;
+
+function toggleSessionPause() {
+  const btn = document.getElementById('pauseBtn');
+  const dot = document.getElementById('sessionDot');
+  const lbl = document.getElementById('sessionClockLbl');
+  if (!sessionPaused) {
+    // Pausar — guardar tiempo hasta ahora
+    commitSessionTime();
+    sessionPaused = true;
+    sessionPauseStart = Date.now();
+    clearInterval(sessionInterval);
+    dot.className = 'drive-dot'; // apagar punto verde
+    if (btn) btn.textContent = '▶';
+    if (lbl) lbl.textContent = 'En pausa';
+    showToast('Sesión pausada');
+  } else {
+    // Reanudar
+    sessionPaused = false;
+    sessionPauseStart = null;
+    sessionStartTime = Date.now(); // resetear para no contar el tiempo pausado
+    dot.className = 'drive-dot active';
+    dot.classList.add('connected');
+    if (btn) btn.textContent = '⏸';
+    if (lbl) lbl.textContent = 'Sesión de hoy';
+    // Reiniciar el interval
+    sessionInterval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+      const el = document.getElementById('sessionClock');
+      if (el) el.textContent = fmtHMS(elapsed);
+      updateTotalTimeDisplay(elapsed);
+      if (elapsed > 0 && elapsed % 120 === 0) commitSessionTime();
+    }, 1000);
+    showToast('Sesión reanudada');
+  }
+}
+
+async function endSession() {
+  if (!confirm('¿Terminar la sesión y guardar todo en Supabase?')) return;
+  // Parar cronómetro de canción si está activo
+  if (songTimerRunning) stopSongTimer();
+  // Guardar tiempo de sesión global
+  commitSessionTime();
+  // Parar el interval
+  clearInterval(sessionInterval);
+  sessionPaused = true;
+  const dot = document.getElementById('sessionDot');
+  const btn = document.getElementById('pauseBtn');
+  const lbl = document.getElementById('sessionClockLbl');
+  if (dot) dot.className = 'drive-dot';
+  if (btn) { btn.textContent = '▶'; }
+  if (lbl) lbl.textContent = 'Sesión terminada';
+  // Guardar en Supabase
+  updateDbStatus('saving');
+  await saveToSupabase();
+  const totalHoy = getCurrentDaySecs();
+  showToast(`✓ Sesión guardada — Hoy: ${fmtHM(totalHoy)}`);
+}
+
+function getCurrentDaySecs() {
+  const daily = JSON.parse(localStorage.getItem('daily_sessions') || '{}');
+  return daily[getDateKey(new Date())] || 0;
+}
+
+// ─── SESSION TIMER (global) ───────────────────────────────────────────
+let sessionStartTime = Date.now();
+let sessionInterval = null;
+
+function fmtHMS(secs) {
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+  return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function fmtHM(secs) {
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  return h + 'h ' + m + 'm';
+}
+
+function getWeekKey(date) {
+  const d = new Date(date);
+  const jan1 = new Date(d.getFullYear(), 0, 1);
+  const week = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+  return d.getFullYear() + '-W' + String(week).padStart(2,'0');
+}
+
+function getWeekLabel(key) {
+  const [year, wPart] = key.split('-W');
+  const w = parseInt(wPart);
+  const jan1 = new Date(parseInt(year), 0, 1);
+  const weekStart = new Date(jan1.getTime() + (w - 1) * 7 * 86400000);
+  const weekEnd = new Date(weekStart.getTime() + 6 * 86400000);
+  const fmt = d => d.toLocaleDateString('es-ES', {day:'numeric', month:'short'});
+  return fmt(weekStart) + ' – ' + fmt(weekEnd);
+}
+
+function getDateKey(date) {
+  const d = new Date(date);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function getMonthKey(date) {
+  const d = new Date(date);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+
+function addDays(date, days) {
+  const d = new Date(date); d.setDate(d.getDate() + days); return d;
+}
+
+function startOfWeek(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function getCurrentWeekSecs() {
+  // Calcular sumando los días de la semana actual desde daily_sessions
+  // así siempre cuadra con el desglose por días de las estadísticas
+  const daily = JSON.parse(localStorage.getItem('daily_sessions') || '{}');
+  const now = new Date();
+  const weekStart = startOfWeek(now);
+  let total = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = addDays(weekStart, i);
+    const key = getDateKey(d);
+    total += daily[key] || 0;
+  }
+  return total;
+}
+
+function saveSessionOnExit() {
+  commitSessionTime();
+  stopSongTimerOnExit();
+  saveToSupabase(); // guardar en Supabase al cerrar
+}
+
+function commitSessionTime() {
+  const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+  if (elapsed < 5) return;
+  // Total
+  const prev = parseInt(localStorage.getItem('total_session_secs') || '0');
+  localStorage.setItem('total_session_secs', prev + elapsed);
+  // Por semana
+  const weekKey = getWeekKey(sessionStartTime);
+  const weekly = JSON.parse(localStorage.getItem('weekly_sessions') || '{}');
+  weekly[weekKey] = (weekly[weekKey] || 0) + elapsed;
+  localStorage.setItem('weekly_sessions', JSON.stringify(weekly));
+  // Por día — acumula cada llamada sin sobrescribir
+  const dayKey = getDateKey(sessionStartTime);
+  const daily = JSON.parse(localStorage.getItem('daily_sessions') || '{}');
+  daily[dayKey] = (daily[dayKey] || 0) + elapsed;
+  localStorage.setItem('daily_sessions', JSON.stringify(daily));
+  // Resetear inicio para no duplicar en la próxima llamada
+  sessionStartTime = Date.now();
+}
+
+function startSessionTimer() {
+  sessionStartTime = Date.now();
+  sessionInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+    const el = document.getElementById('sessionClock');
+    if (el) el.textContent = fmtHMS(elapsed);
+    updateTotalTimeDisplay(elapsed);
+    // Guardar en localStorage cada 2 minutos para no perder tiempo
+    if (elapsed > 0 && elapsed % 120 === 0) {
+      commitSessionTime();
+    }
+  }, 1000);
+  window.addEventListener('beforeunload', saveSessionOnExit);
+}
+
+function updateTotalTimeDisplay(sessionElapsed) {
+  if (sessionElapsed === undefined) sessionElapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+  const weekPrev = getCurrentWeekSecs();
+  const elW = document.getElementById('weekTimeVal');
+  if (elW) elW.textContent = fmtHM(weekPrev + sessionElapsed);
+}
+
+// ─── SONG TIMER (per song) ────────────────────────────────────────────
+let songTimerRunning = false;
+let songTimerStart = null;
+let songTimerInterval = null;
+let songTimerSongId = null;
+
+function renderSongTimer(s) {
+  const totalSecs = (s.tiempoTotal || 0);
+  const sessions = (s.sesionesTimer || []).slice().reverse();
+  const isRunning = songTimerRunning && songTimerSongId === s.id;
+  const sessionsHtml = sessions.length === 0
+    ? `<div style="font-size:10px;color:var(--text3);padding:6px 0;">Sin sesiones registradas aún</div>`
+    : sessions.map((se, i) => {
+        const d = new Date(se.start);
+        const dateStr = d.toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}) + ' ' + d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+        const realIdx = (s.sesionesTimer.length - 1) - i;
+        return `<div class="stc-session-row">
+          <span class="stc-session-date">${se.manual ? '✏️ ' : ''}${dateStr}</span>
+          <span class="stc-session-dur">${fmtHMS(se.dur)}</span>
+          <button onclick="editSession(${realIdx})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:0 3px;" title="Editar sesión">✏️</button>
+          <button onclick="deleteSession(${realIdx})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:0 3px;" title="Eliminar sesión">×</button>
+        </div>`;
+      }).join('');
+
+  return `
+  <div class="song-timer-card">
+    <div class="stc-row">
+      <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);font-family:'DM Mono',monospace;">Cronómetro</div>
+      <div class="stc-display" style="flex-direction:row;align-items:center;gap:10px;margin-left:auto;">
+        <div>
+          <span style="font-size:10px;color:var(--text3);">Sesión: </span>
+          <span class="stc-running ${isRunning?'':'stopped'}" id="songTimerDisplay" style="font-size:14px;">${isRunning ? fmtHMS(Math.floor((Date.now()-songTimerStart)/1000)) : '00:00:00'}</span>
+        </div>
+        <div>
+          <span style="font-size:10px;color:var(--text3);">Total: </span>
+          <span style="font-size:13px;color:var(--accent);font-family:'DM Mono',monospace;">${fmtHM(totalSecs)}</span>
+        </div>
+      </div>
+      <div class="stc-btns" style="margin-left:10px;">
+        ${isRunning
+          ? `<button class="stc-btn-stop" onclick="stopSongTimer()">⏹ Parar</button>`
+          : `<button class="stc-btn-play" onclick="startSongTimer()">▶ Iniciar</button>`}
+        <button class="btn btn-ghost btn-sm" onclick="toggleSessionHistory()" id="histBtn" style="font-size:11px;">Historial ${sessions.length > 0 ? '('+sessions.length+')' : ''}</button>
+        <button class="btn btn-ghost btn-sm" onclick="openManualSessionModal()" style="font-size:11px;">+ Manual</button>
+      </div>
+    </div>
+    <div id="sessionHistory" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:7px;max-height:130px;overflow-y:auto;">
+      ${sessionsHtml}
+    </div>
+  </div>`;
+}
+
+function toggleSessionHistory() {
+  const el = document.getElementById('sessionHistory');
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+let editingSessionIdx = null;
+
+function editSession(idx) {
+  const s = getSong(currentId); if (!s) return;
+  const se = s.sesionesTimer[idx];
+  editingSessionIdx = idx;
+  const d = new Date(se.start);
+  document.getElementById('manualDate').value = d.toISOString().split('T')[0];
+  document.getElementById('manualTime').value = d.toTimeString().substring(0,5);
+  const h = Math.floor(se.dur / 3600);
+  const m = Math.floor((se.dur % 3600) / 60);
+  const sec = se.dur % 60;
+  document.getElementById('manualHours').value = h || '';
+  document.getElementById('manualMins').value = m || '';
+  document.getElementById('manualSecs').value = sec || '';
+  document.querySelector('#manualSessionModal .modal-title').textContent = 'Editar sesión';
+  document.getElementById('manualSessionModal').classList.remove('hidden');
+}
+
+function deleteSession(idx) {
+  const s = getSong(currentId); if (!s) return;
+  const dur = s.sesionesTimer[idx].dur;
+  s.sesionesTimer.splice(idx, 1);
+  s.tiempoTotal = Math.max(0, (s.tiempoTotal || 0) - dur);
+  s._baseTiempoTotal = s.tiempoTotal;
+  save();
+  renderDetail();
+  showToast('Sesión eliminada');
+}
+
+// ─── STATS VIEW ───────────────────────────────────────────────────────
+let statCurrentTab = 'week';
+let statOffset = 0;
+
+function showStats() {
+  statOffset = 0;
+  document.getElementById('emptyDetail').style.display = 'none';
+  document.getElementById('detailContent').style.display = 'none';
+  document.getElementById('statsContent').style.display = 'block';
+  renderStats();
+}
+
+function hideStats() {
+  document.getElementById('statsContent').style.display = 'none';
+  if (currentId) {
+    renderDetail();
+  } else {
+    document.getElementById('emptyDetail').style.display = 'flex';
+    document.getElementById('detailContent').style.display = 'none';
+  }
+}
+
+function renderStats() {
+  statOffset = 0;
+  statCurrentTab = 'week';
+  document.getElementById('statsContent').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;">Estadísticas</div>
+      <button class="btn btn-ghost btn-sm" onclick="hideStats()">← Volver</button>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+      <button class="filter-chip" id="statTab-day" onclick="switchStatTab('day')">Hoy</button>
+      <button class="filter-chip active" id="statTab-week" onclick="switchStatTab('week')">Semana</button>
+      <button class="filter-chip" id="statTab-month" onclick="switchStatTab('month')">Mes</button>
+      <button class="filter-chip" id="statTab-year" onclick="switchStatTab('year')">Año</button>
+      <button class="filter-chip" id="statTab-total" onclick="switchStatTab('total')">Total</button>
+    </div>
+    <div id="statTabContent"></div>
+  `;
+  renderStatTab('week');
+}
+
+function switchStatTab(tab) {
+  statCurrentTab = tab;
+  statOffset = 0;
+  document.querySelectorAll('[id^="statTab-"]').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('statTab-' + tab);
+  if (el) el.classList.add('active');
+  renderStatTab(tab);
+}
+
+function navigateStat(dir) {
+  statOffset += dir;
+  renderStatTab(statCurrentTab);
+}
+
+function sessionSecsForPeriod(startMs, endMs) {
+  let secs = 0;
+  songs.forEach(s => (s.sesionesTimer||[]).forEach(se => {
+    if (se.start >= startMs && se.start < endMs) secs += se.dur;
+  }));
+  return secs;
+}
+
+function songsForPeriod(startMs, endMs) {
+  return songs.map(s => {
+    let secs = 0;
+    (s.sesionesTimer||[]).forEach(se => {
+      if (se.start >= startMs && se.start < endMs) secs += se.dur;
+    });
+    return { ...s, periodSecs: secs };
+  }).filter(s => s.periodSecs > 0).sort((a,b) => b.periodSecs - a.periodSecs);
+}
+
+function barRow(label, secs, maxSecs, isHighlight, extraLabel) {
+  const pct = maxSecs > 0 ? Math.round((secs / maxSecs) * 100) : 0;
+  return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+    <div style="font-size:10px;color:var(--text3);width:90px;flex-shrink:0;font-family:'DM Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${label}</div>
+    <div style="flex:1;background:var(--bg3);border-radius:4px;height:16px;overflow:hidden;">
+      <div style="width:${pct}%;height:100%;background:${isHighlight?'var(--accent)':'var(--bg4)'};border-radius:4px;display:flex;align-items:center;padding-left:5px;min-width:${secs>0?'4px':'0'};">
+        ${pct > 12 ? `<span style="font-size:9px;color:${isHighlight?'#0e0e10':'var(--text2)'};font-family:'DM Mono',monospace;">${fmtHM(secs)}</span>` : ''}
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--text2);font-family:'DM Mono',monospace;width:42px;text-align:right;flex-shrink:0;">${fmtHM(secs)}</div>
+    ${extraLabel ? `<span style="font-size:9px;background:rgba(232,255,71,0.15);color:var(--accent);padding:1px 5px;border-radius:8px;flex-shrink:0;">${extraLabel}</span>` : ''}
+  </div>`;
+}
+
+function navBar(label) {
+  return `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;">
+    <button onclick="navigateStat(-1)" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:0 6px;line-height:1;">‹</button>
+    <span style="font-size:13px;font-weight:500;color:var(--text);">${label}</span>
+    <button onclick="navigateStat(1)" ${statOffset >= 0 ? 'disabled' : ''} style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:0 6px;line-height:1;${statOffset >= 0 ? 'opacity:0.3;cursor:default;' : ''}">›</button>
+  </div>`;
+}
+
+function renderStatTab(tab) {
+  statCurrentTab = tab;
+  const now = new Date();
+  const totalAll = parseInt(localStorage.getItem('total_session_secs') || '0');
+  const currentElapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+  let periodStart, periodEnd, periodLabel, breakdownHtml = '';
+
+  if (tab === 'day') {
+    const d = addDays(now, statOffset);
+    periodStart = new Date(d); periodStart.setHours(0,0,0,0);
+    periodEnd = new Date(d); periodEnd.setHours(23,59,59,999);
+    const isToday = statOffset === 0;
+    const dayKey = getDateKey(d);
+    const daily = JSON.parse(localStorage.getItem('daily_sessions') || '{}');
+    periodLabel = isToday ? 'Hoy' : d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    // Tiempo del día desde daily_sessions (acumula todas las sesiones del día)
+    const daySecs = (daily[dayKey] || 0) + (isToday ? currentElapsed : 0);
+    // Sobreescribir periodSecs con el valor real del día
+    periodStart._daySecs = daySecs;
+
+  } else if (tab === 'week') {
+    const base = addDays(now, statOffset * 7);
+    periodStart = startOfWeek(base);
+    periodEnd = addDays(periodStart, 7);
+    const isThis = statOffset === 0;
+    periodLabel = isThis ? 'Esta semana' : getWeekLabel(getWeekKey(periodStart));
+    const days = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+    const daily = JSON.parse(localStorage.getItem('daily_sessions') || '{}');
+    const daySecs = Array.from({length:7}, (_,i) => {
+      const d = addDays(periodStart, i);
+      const dayKey = getDateKey(d);
+      return (daily[dayKey] || 0) + (isThis && getDateKey(d) === getDateKey(now) ? currentElapsed : 0);
+    });
+    const maxDay = Math.max(...daySecs, 1);
+    const todayIdx = isThis ? ((now.getDay() + 6) % 7) : -1;
+    breakdownHtml = `<div class="card detail-full" style="margin-bottom:12px;"><div class="card-label">Por día</div><div style="margin-top:8px;">
+      ${daySecs.map((s,i) => barRow(days[i] + ' ' + addDays(periodStart,i).getDate(), s, maxDay, i===todayIdx, i===todayIdx&&isThis?'Hoy':'')).join('')}
+    </div></div>`;
+
+  } else if (tab === 'month') {
+    const base = new Date(now.getFullYear(), now.getMonth() + statOffset, 1);
+    periodStart = new Date(base.getFullYear(), base.getMonth(), 1);
+    periodEnd = new Date(base.getFullYear(), base.getMonth() + 1, 1);
+    const isThis = statOffset === 0;
+    periodLabel = base.toLocaleDateString('es-ES',{month:'long',year:'numeric'});
+    const weekStarts = [];
+    let cur = new Date(periodStart);
+    while (cur < periodEnd) {
+      weekStarts.push(new Date(cur));
+      cur = addDays(cur, 7);
+    }
+    const thisWk = getWeekKey(now);
+    const wSecs = weekStarts.map(ws => {
+      const we = addDays(ws, 7);
+      return sessionSecsForPeriod(ws.getTime(), Math.min(we.getTime(), periodEnd.getTime())) + (isThis && getWeekKey(ws) === thisWk ? currentElapsed : 0);
+    });
+    const maxW = Math.max(...wSecs, 1);
+    breakdownHtml = `<div class="card detail-full" style="margin-bottom:12px;"><div class="card-label">Por semana</div><div style="margin-top:8px;">
+      ${weekStarts.map((ws,i) => {
+        const isThisW = isThis && getWeekKey(ws) === thisWk;
+        return barRow('Sem ' + ws.getDate() + '/' + (ws.getMonth()+1), wSecs[i], maxW, isThisW, isThisW?'Esta':'');
+      }).join('')}
+    </div></div>`;
+
+  } else if (tab === 'year') {
+    const yr = now.getFullYear() + statOffset;
+    periodStart = new Date(yr, 0, 1);
+    periodEnd = new Date(yr + 1, 0, 1);
+    const isThis = statOffset === 0;
+    periodLabel = yr.toString();
+    const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const mSecs = Array.from({length:12}, (_,i) => {
+      return sessionSecsForPeriod(new Date(yr,i,1).getTime(), new Date(yr,i+1,1).getTime()) + (isThis && now.getMonth()===i ? currentElapsed : 0);
+    });
+    const maxM = Math.max(...mSecs, 1);
+    breakdownHtml = `<div class="card detail-full" style="margin-bottom:12px;"><div class="card-label">Por mes</div><div style="margin-top:8px;">
+      ${mSecs.map((s,i) => barRow(monthNames[i], s, maxM, isThis&&now.getMonth()===i, isThis&&now.getMonth()===i?'Ahora':'')).join('')}
+    </div></div>`;
+
+  } else {
+    // Total — desglose por años
+    const allYears = [...new Set([now.getFullYear(), ...songs.flatMap(s => (s.sesionesTimer||[]).map(se => new Date(se.start).getFullYear()))])].sort().reverse();
+    const ySecs = allYears.map(yr => sessionSecsForPeriod(new Date(yr,0,1).getTime(), new Date(yr+1,0,1).getTime()) + (yr===now.getFullYear()?currentElapsed:0));
+    const maxY = Math.max(...ySecs, 1);
+    periodStart = new Date(0); periodEnd = new Date(9999,0,1);
+    periodLabel = 'Total histórico';
+    breakdownHtml = `<div class="card detail-full" style="margin-bottom:12px;"><div class="card-label">Por año</div><div style="margin-top:8px;">
+      ${allYears.map((yr,i) => barRow(yr.toString(), ySecs[i], maxY, yr===now.getFullYear(), yr===now.getFullYear()?'Ahora':'')).join('')}
+    </div></div>`;
+  }
+
+  const addElapsed = statOffset === 0 && tab !== 'total';
+  const periodSecs = tab === 'total'
+    ? totalAll + currentElapsed
+    : tab === 'day' && periodStart._daySecs !== undefined
+    ? periodStart._daySecs
+    : sessionSecsForPeriod(periodStart.getTime(), periodEnd.getTime()) + (addElapsed ? currentElapsed : 0);
+
+  const editDayBtn = tab === 'day'
+    ? `<button class="btn btn-ghost btn-sm" onclick="openEditDayModal('${getDateKey(addDays(now, statOffset))}', ${periodSecs})" style="font-size:11px;margin-left:8px;">✏️ Editar</button>`
+    : '';
+
+  const sp = songsForPeriod(periodStart.getTime(), periodEnd.getTime());
+  const songsHtml = sp.length === 0
+    ? `<div style="color:var(--text3);font-size:12px;padding:8px 0;">Sin canciones tocadas en este período</div>`
+    : sp.map((s,i) => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="font-size:11px;color:var(--text3);width:16px;text-align:right;flex-shrink:0;">${i+1}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.title}</div>
+          <div style="font-size:10px;color:var(--text3);">${s.artist}</div>
+        </div>
+        <div style="font-size:12px;color:var(--accent);font-family:'DM Mono',monospace;flex-shrink:0;">${fmtHM(s.periodSecs)}</div>
+      </div>`).join('');
+
+  document.getElementById('statTabContent').innerHTML = `
+    ${tab !== 'total' ? navBar(periodLabel) : `<div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:12px;">${periodLabel}</div>`}
+    <div class="meter-cards" style="margin-bottom:12px;">
+      <div class="meter-card">
+        <div class="meter-card-val" style="display:flex;align-items:center;gap:6px;">${fmtHM(periodSecs)}${editDayBtn}</div>
+        <div class="meter-card-lbl">${periodLabel}</div>
+      </div>
+      <div class="meter-card"><div class="meter-card-val">${fmtHM(totalAll + currentElapsed)}</div><div class="meter-card-lbl">Total guitarra</div></div>
+      <div class="meter-card"><div class="meter-card-val">${songs.filter(s=>s.estado==='aprendida').length} / ${songs.length}</div><div class="meter-card-lbl">Aprendidas</div></div>
+      <div class="meter-card"><div class="meter-card-val">${sp.length}</div><div class="meter-card-lbl">Canciones</div></div>
+    </div>
+    ${breakdownHtml}
+    <div class="card detail-full">
+      <div class="card-label">Canciones — ${periodLabel}</div>
+      <div style="margin-top:8px;">${songsHtml}</div>
+    </div>
+  `;
+}
+
+function startSongTimer(fromChordify) {
+  if (songTimerRunning) return;
+  const s = getSong(currentId); if (!s) return;
+  songTimerRunning = true;
+  songTimerStart = Date.now();
+  songTimerSongId = currentId;
+  clearInterval(songTimerInterval);
+  songTimerInterval = setInterval(() => {
+    const el = document.getElementById('songTimerDisplay');
+    if (el) {
+      const secs = Math.floor((Date.now() - songTimerStart) / 1000);
+      el.textContent = fmtHMS(secs);
+      el.classList.remove('stopped');
+    }
+  }, 1000);
+  const btn = document.querySelector('.stc-btn-play');
+  if (btn) btn.outerHTML = `<button class="stc-btn-stop" onclick="stopSongTimer()">⏹ Parar</button>`;
+  showToast(fromChordify ? 'Cronómetro iniciado al abrir Chordify' : 'Cronómetro iniciado');
+}
+
+function startSongTimerFromChordify() {
+  if (!songTimerRunning) startSongTimer(true);
+}
+
+function stopSongTimer() {
+  if (!songTimerRunning) return;
+  const dur = Math.floor((Date.now() - songTimerStart) / 1000);
+  songTimerRunning = false;
+  clearInterval(songTimerInterval);
+  const s = getSong(songTimerSongId); if (!s) return;
+  if (!s.sesionesTimer) s.sesionesTimer = [];
+  s.sesionesTimer.push({ start: songTimerStart, dur });
+  s.tiempoTotal = (s.tiempoTotal || 0) + dur;
+  s.ultimaVez = new Date().toISOString();
+  s._baseTiempoTotal = s.tiempoTotal;
+  songTimerSongId = null;
+  songTimerStart = null;
+  save(); // guarda en localStorage y programa Supabase en 2s
+  renderDetail();
+  showToast('Sesión guardada: ' + fmtHMS(dur));
+}
+
+function stopSongTimerOnExit() {
+  if (!songTimerRunning) return;
+  const dur = Math.floor((Date.now() - songTimerStart) / 1000);
+  if (dur < 5) return;
+  const s = getSong(songTimerSongId); if (!s) return;
+  if (!s.sesionesTimer) s.sesionesTimer = [];
+  s.sesionesTimer.push({ start: songTimerStart, dur });
+  s.tiempoTotal = (s.tiempoTotal || 0) + dur;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
+}
+
+// ─── MOBILE ───────────────────────────────────────────────────────────
+function isMobile() { return window.innerWidth <= 480; }
+
+function toggleMobileSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('mobileOverlay');
+  const fab = document.getElementById('fabBtn');
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('open');
+}
+
+function closeMobileSidebar() {
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('mobileOverlay').classList.remove('open');
+}
+
+function checkMobileUI() {
+  const fab = document.getElementById('fabBtn');
+  const addBtn = document.querySelector('.btn-primary');
+  if (isMobile()) {
+    if (fab) fab.style.display = 'flex';
+  } else {
+    if (fab) fab.style.display = 'none';
+  }
+}
+
+window.addEventListener('resize', checkMobileUI);
+
+// Cerrar sidebar al seleccionar canción en móvil
+const _origSelectSong = window.selectSong;
+
+// ─── KEYBOARD ─────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeAddModal(); closeLinkModal(); closePdfPanel(); closeManualSessionModal(); closeEditDayModal(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'n') { e.preventDefault(); openAddModal(); }
+});
+
+// ─── START ────────────────────────────────────────────────────────────
+init();
+
+// Si no hay datos locales, pantalla vacía hasta que cargue Supabase
+if (songs.length === 0) {
+  renderSidebar();
+}
+</script>
+</body>
+</html>
